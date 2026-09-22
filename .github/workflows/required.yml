@@ -1,0 +1,95 @@
+name: required
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - projection/review
+
+permissions:
+  contents: read
+
+jobs:
+  processor:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Clean checkout before
+        run: test -z "$(git status --porcelain)"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg sqlite3
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          python -m pip install . -r requirements-dev.txt
+      - name: Public projection guard
+        run: python .github/check_public_projection.py
+      - name: Compile, test, and CLI
+        run: |
+          python -m compileall -q processor examples fixtures
+          python -m pytest
+          edge-evidence-processor --help
+          processor-worker --help
+          processor-inspect --help
+      - name: Package build
+        run: |
+          rm -rf build dist ./*.egg-info /tmp/processor-dist
+          python -m build --outdir /tmp/processor-dist
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          wheel = next(Path("/tmp/processor-dist").glob("*.whl"))
+          with ZipFile(wheel) as archive:
+              names = set(archive.namelist())
+          assert "processor/__init__.py" in names
+          assert "processor/worker.py" in names
+          assert any(name.startswith("processor/contracts/") for name in names)
+          assert any(name.endswith(".dist-info/licenses/LICENSE") for name in names)
+          assert any(name.endswith(".dist-info/licenses/THIRD_PARTY_NOTICES.md") for name in names)
+          PY
+      - name: Deterministic recruiter demo
+        run: |
+          rm -rf /tmp/demo-a /tmp/demo-b
+          PYTHONPATH=. python examples/synthetic_processor.py --output-root /tmp/demo-a demo
+          PYTHONPATH=. python examples/synthetic_processor.py --output-root /tmp/demo-a fingerprint > /tmp/fingerprint-a.json
+          PYTHONPATH=. python examples/synthetic_processor.py --output-root /tmp/demo-b demo
+          PYTHONPATH=. python examples/synthetic_processor.py --output-root /tmp/demo-b fingerprint > /tmp/fingerprint-b.json
+          cmp /tmp/fingerprint-a.json /tmp/fingerprint-b.json
+          PYTHONPATH=. python examples/synthetic_processor.py --output-root /tmp/demo-a inspect
+      - name: Clean checkout after
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+
+  terraform:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.0
+      - name: Credential-free Terraform validation
+        run: |
+          terraform -chdir=terraform fmt -check -recursive
+          terraform -chdir=terraform init -backend=false
+          terraform -chdir=terraform validate
+          terraform -chdir=terraform test -verbose
+      - name: Clean checkout after
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
