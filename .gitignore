@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
+*.sqlite*
+*.db
+.env
+dist/
+build/
+.terraform/
+*.tfstate*
+crash.log
+examples/**/work/
+examples/.demo-output/
+*.egg-info/

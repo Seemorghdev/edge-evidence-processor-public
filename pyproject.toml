@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edge-evidence-processor"
+version = "0.1.0"
+description = "Deterministic SQLite-authoritative processor worker"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+authors = [{ name = "Seemorgh" }]
+dependencies = []
+
+[project.optional-dependencies]
+adk = ["google-adk==2.6.2"]
+
+[project.scripts]
+edge-evidence-processor = "processor.cli:main"
+processor-worker = "processor.cli:main"
+processor-inspect = "processor.inspect:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["processor*"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "adk: requires the isolated optional Google ADK environment",
+  "pra_p02a_adk_positive: requires the isolated google-adk test environment",
+  "acceptance: exercises the product command surface",
+]

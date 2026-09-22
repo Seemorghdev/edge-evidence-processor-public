@@ -1,0 +1,16 @@
+{
+  "name": "edge-evidence-processor",
+  "build": { "dockerfile": "Dockerfile" },
+  "postCreateCommand": "make setup",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "hashicorp.terraform"
+      ]
+    }
+  },
+  "remoteUser": "vscode"
+}
