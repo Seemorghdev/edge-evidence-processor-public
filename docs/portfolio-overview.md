@@ -39,7 +39,7 @@ no processing job (MISSING projection)
 
 `MISSING` is a worker projection when no job row exists, not a persisted job state. The synthetic resume scenario stops immediately after the durable `PREPARED` commit, then proves that the same deterministic job is completed on the next run. The busy-lock scenario proves that a blocked attempt leaves the authoritative database unchanged.
 
-See [Architecture](docs/architecture.md) for transaction, locking, and concurrency boundaries.
+See [Architecture](architecture.md) for transaction, locking, and concurrency boundaries.
 
 ## 60-second review
 
@@ -113,7 +113,7 @@ This repository contains three concrete runtime/deployment surfaces:
 
 Terraform requires caller-supplied project/region values, an immutable image reference by digest, an existing service account, and absolute in-container database/spool paths. It does **not** create IAM, enable APIs, configure a backend, create storage/database resources, grant public access, authenticate, apply itself, or deploy anything.
 
-The committed fixture proves the image/worker command contract locally and in CI. This projection does not claim that a live Google Cloud deployment has been performed or that ephemeral Cloud Run storage is a persistence design for real evidence. See [Deployment handoff](docs/deployment-handoff.md).
+The committed fixture proves the image/worker command contract locally and in CI. This projection does not claim that a live Google Cloud deployment has been performed or that ephemeral Cloud Run storage is a persistence design for real evidence. See [Deployment handoff](deployment-handoff.md).
 
 ## Optional ADK boundary
 
@@ -126,13 +126,13 @@ PYTHONPATH=. uv run --no-sync python examples/adk_inspection_demo.py
 
 ## Documentation
 
-- [Architecture](docs/architecture.md)
-- [Contracts](docs/contracts.md)
-- [Local development](docs/local-development.md)
-- [Deployment handoff](docs/deployment-handoff.md)
-- [Deterministic examples](examples/README.md)
-- [Projection provenance](docs/PROJECTION-PROVENANCE.md)
-- [Security policy](SECURITY.md)
+- [Architecture](architecture.md)
+- [Contracts](contracts.md)
+- [Local development](local-development.md)
+- [Deployment handoff](deployment-handoff.md)
+- [Deterministic examples](../examples/README.md)
+- [Projection provenance](PROJECTION-PROVENANCE.md)
+- [Security policy](../SECURITY.md)
 
 ## Repository map
 
